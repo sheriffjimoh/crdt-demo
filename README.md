@@ -6,7 +6,8 @@ Multiple users can open the same room URL and edit one shared document at the sa
 
 ## What This Project Does
 
-- Creates a unique room URL and redirects users into that room.
+- Creates named rooms and keeps a persistent room list on the server.
+- Lets users revisit rooms from a dashboard or join by room ID.
 - Connects each room to a shared Yjs document over WebSocket.
 - Syncs text changes in real time between all connected users.
 - Shows room members (awareness/presence).
@@ -34,9 +35,12 @@ Multiple users can open the same room URL and edit one shared document at the sa
 
 ```text
 app/
+	api/rooms/route.ts          # list/create named rooms
+	api/rooms/[roomId]/route.ts # read/touch room metadata
 	components/
 		CollaborativeEditor.tsx   # editor UI + orchestration
 		MarkdownPreview.tsx       # markdown preview UI
+		RoomDashboard.tsx         # named-room landing page
 	room/[roomId]/page.tsx      # room experience
 
 server/
@@ -51,6 +55,9 @@ src/
 		types.ts                  # collaboration types
 	markdown/
 		renderers.tsx             # markdown renderer map
+	rooms/
+		store.ts                  # file-backed room registry
+		types.ts                  # room metadata types
 ```
 
 ## Prerequisites
@@ -86,7 +93,9 @@ npm run dev
 http://localhost:3000
 ```
 
-4. Test collaboration:
+4. Create or open a named room from the dashboard.
+
+5. Test collaboration:
 
 - Open the same room URL in two browser windows.
 - Type in one window and confirm the other updates instantly.
@@ -116,10 +125,10 @@ NEXT_PUBLIC_WS_URL=ws://localhost:1234 npm run dev
 ## Notes
 
 - Current default setup persists room state to `./.yjs-db` on the server machine.
-- If the server restarts, room documents are restored from disk.
+- Room metadata (name + recency) is persisted separately at `./.rooms/rooms.json`.
+- If the server restarts, room documents and room names are restored from disk.
 - Presence and document content are synchronized over the same websocket provider.
 
 ## Next Milestones
 
-1. Room list + named rooms
-2. Deployment (frontend + websocket server)
+1. Deployment (frontend + websocket server)
