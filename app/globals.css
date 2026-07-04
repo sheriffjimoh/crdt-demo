@@ -24,3 +24,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* Make CodeMirror fill its container */
+.cm-editor {
+  height: 100%;
+}
+
+.cm-scroller {
+  height: 100%;
+  overflow: auto;
+}
