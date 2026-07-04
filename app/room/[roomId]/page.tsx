@@ -11,8 +11,6 @@ export default function RoomPage() {
   const [markdownContent, setMarkdownContent] = useState('')
   const [copied, setCopied] = useState(false)
 
-  // useCallback so the function reference stays stable
-  // and doesn't cause the editor to re-render on every keystroke
   const handleContentChange = useCallback((content: string) => {
     setMarkdownContent(content)
   }, [])
@@ -29,8 +27,6 @@ export default function RoomPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
-
-      {/* Top bar */}
       <header className="flex items-center justify-between px-6 py-3 bg-gray-900 border-b border-gray-700 shrink-0">
         <div className="flex items-center gap-3">
           <span className="text-lg font-bold text-white tracking-tight">
@@ -41,7 +37,6 @@ export default function RoomPage() {
           </span>
         </div>
 
-        {/* Share button */}
         <button
           onClick={copyLink}
           className="text-sm px-4 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 transition-colors"
@@ -50,10 +45,7 @@ export default function RoomPage() {
         </button>
       </header>
 
-      {/* Main split-panel layout */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* Left: Editor */}
         <div className="w-1/2 border-r border-gray-700 overflow-hidden flex flex-col">
           <div className="px-4 py-1.5 text-xs text-gray-500 bg-gray-800 border-b border-gray-700">
             ✏️ Markdown Editor
@@ -66,7 +58,6 @@ export default function RoomPage() {
           </div>
         </div>
 
-        {/* Right: Preview */}
         <div className="w-1/2 overflow-hidden flex flex-col">
           <div className="px-4 py-1.5 text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
             👁️ Live Preview
@@ -75,7 +66,6 @@ export default function RoomPage() {
             <MarkdownPreview content={markdownContent} />
           </div>
         </div>
-
       </div>
     </div>
   )
