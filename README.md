@@ -93,7 +93,8 @@ http://localhost:3000
 ## Scripts
 
 - `npm run dev` - start Next.js dev server
-- `npm run server` - start y-websocket sync server on port 1234
+- `npm run server` - start y-websocket sync server with LevelDB persistence on port 1234
+- `npm run server:memory` - start y-websocket sync server without persistence
 - `npm run build` - production build
 - `npm run start` - run production app
 - `npm run lint` - run ESLint
@@ -103,6 +104,7 @@ http://localhost:3000
 Optional:
 
 - `NEXT_PUBLIC_WS_URL` - override websocket server URL (default: `ws://localhost:1234`)
+- `YPERSISTENCE` - persistence directory for y-websocket server (default in this repo: `./.yjs-db`)
 
 Example:
 
@@ -112,8 +114,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:1234 npm run dev
 
 ## Notes
 
-- Current setup is in-memory sync server (no persistence yet).
-- If the server restarts, room document state resets.
+- Current default setup persists room state to `./.yjs-db` on the server machine.
+- If the server restarts, room documents are restored from disk.
 - Presence and document content are synchronized over the same websocket provider.
 
 ## Next Milestones

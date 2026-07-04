@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "server": "PORT=1234 npx y-websocket"
+    "server": "PORT=1234 YPERSISTENCE=./.yjs-db npx y-websocket",
+    "server:memory": "PORT=1234 npx y-websocket"
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.5.0",
