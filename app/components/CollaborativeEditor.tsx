@@ -1,11 +1,16 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { basicSetup } from 'codemirror'
+import { EditorState } from '@codemirror/state'
+import { EditorView, placeholder } from '@codemirror/view'
+import { markdown } from '@codemirror/lang-markdown'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { yCollab } from 'y-codemirror.next'
 import { STATUS_CONFIG } from '@/src/collaboration/constants'
 import { createRandomIdentity } from '@/src/collaboration/identity'
 import { getSession, releaseSession } from '@/src/collaboration/sessionStore'
-import { applyTextDiff } from '@/src/collaboration/textDiff'
-import type { ConnectedUser, ConnectionStatus, RoomSession } from '@/src/collaboration/types'
+import type { ConnectedUser, ConnectionStatus } from '@/src/collaboration/types'
 
 interface AwarenessState {
   user?: ConnectedUser
@@ -17,10 +22,9 @@ interface Props {
 }
 
 export default function CollaborativeEditor({ roomId, onContentChange }: Props) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const isRemoteChange = useRef(false)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const viewRef = useRef<EditorView | null>(null)
   const onContentChangeRef = useRef(onContentChange)
-  const sessionRef = useRef<RoomSession | null>(null)
   const identityRef = useRef(createRandomIdentity())
 
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([])
@@ -31,10 +35,9 @@ export default function CollaborativeEditor({ roomId, onContentChange }: Props) 
   }, [onContentChange])
 
   useEffect(() => {
-    if (!textareaRef.current) return
+    if (!editorRef.current) return
 
     const session = getSession(roomId)
-    sessionRef.current = session
     const { provider, yText } = session
 
     const handleStatus = (event: { status: string }) => {
@@ -50,48 +53,56 @@ export default function CollaborativeEditor({ roomId, onContentChange }: Props) 
       setConnectedUsers(users)
     }
     provider.awareness.on('change', updateUsers)
+    updateUsers()
 
     provider.awareness.setLocalStateField('user', {
       name: identityRef.current.name,
       color: identityRef.current.color,
+      colorLight: identityRef.current.colorLight,
     })
 
+    const state = EditorState.create({
+      doc: yText.toString(),
+      extensions: [
+        basicSetup,
+        markdown(),
+        oneDark,
+        EditorView.lineWrapping,
+        placeholder('# Start typing here...'),
+        yCollab(yText, provider.awareness),
+      ],
+    })
+
+    const view = new EditorView({
+      state,
+      parent: editorRef.current,
+    })
+    viewRef.current = view
+
+    onContentChangeRef.current(yText.toString())
+
     const observer = () => {
-      const textarea = textareaRef.current
-      const content = yText.toString()
-
-      if (textarea) {
-        if (textarea.value !== content) {
-          const selStart = textarea.selectionStart
-          const selEnd = textarea.selectionEnd
-          isRemoteChange.current = true
-          textarea.value = content
-          isRemoteChange.current = false
-          textarea.setSelectionRange(selStart, selEnd)
-        }
-      }
-
-      onContentChangeRef.current(content)
+      onContentChangeRef.current(yText.toString())
     }
     yText.observe(observer)
 
     const handleSync = (isSynced: boolean) => {
-      if (isSynced && textareaRef.current) {
+      if (isSynced) {
         const content = yText.toString()
-        textareaRef.current.value = content
         onContentChangeRef.current(content)
         console.log('[sync] Loaded document, length:', content.length)
       }
     }
     provider.on('sync', handleSync)
 
-    if (provider.synced && textareaRef.current) {
+    if (provider.synced) {
       const content = yText.toString()
-      textareaRef.current.value = content
       onContentChangeRef.current(content)
     }
 
     return () => {
+      view.destroy()
+      viewRef.current = null
       yText.unobserve(observer)
       provider.off('status', handleStatus)
       provider.off('sync', handleSync)
@@ -99,15 +110,6 @@ export default function CollaborativeEditor({ roomId, onContentChange }: Props) 
       releaseSession(roomId)
     }
   }, [roomId])
-
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (isRemoteChange.current) return
-
-    const session = sessionRef.current
-    if (!session) return
-
-    applyTextDiff(session.ydoc, session.yText, e.target.value)
-  }
 
   const statusConfig = STATUS_CONFIG[status]
 
@@ -137,15 +139,12 @@ export default function CollaborativeEditor({ roomId, onContentChange }: Props) 
         Room: {roomId} | Synced: {status === 'connected' ? 'yes' : 'no'} | Users: {connectedUsers.length}
       </div>
 
-      <textarea
-        ref={textareaRef}
-        onChange={handleInput}
-        placeholder={`# Start typing here...\n\nShare the URL with someone to collaborate.\n\n## Markdown works\n- **Bold**, *italic*, \`code\`\n- [Links](https://example.com)`}
-        spellCheck={false}
-        className="flex-1 w-full resize-none bg-gray-900 text-gray-100
-          text-sm font-mono leading-relaxed p-6 outline-none border-none
-          placeholder-gray-600"
-      />
+      <div className="flex-1 overflow-hidden bg-gray-900">
+        <div
+          ref={editorRef}
+          className="h-full w-full text-sm"
+        />
+      </div>
     </div>
   )
 }

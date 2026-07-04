@@ -10,6 +10,7 @@ Multiple users can open the same room URL and edit one shared document at the sa
 - Connects each room to a shared Yjs document over WebSocket.
 - Syncs text changes in real time between all connected users.
 - Shows room members (awareness/presence).
+- Shows live remote cursors and selections in the editor.
 - Renders a live Markdown preview beside the editor.
 
 ## What You Can Learn From It
@@ -120,7 +121,5 @@ NEXT_PUBLIC_WS_URL=ws://localhost:1234 npm run dev
 
 ## Next Milestones
 
-1. Persistence (LevelDB)
-2. Live cursors
-3. Room list + named rooms
-4. Deployment (frontend + websocket server)
+1. Room list + named rooms
+2. Deployment (frontend + websocket server)

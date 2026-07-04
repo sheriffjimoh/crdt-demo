@@ -6,8 +6,11 @@ function randomItem<T>(items: T[]): T {
 }
 
 export function createRandomIdentity(): UserIdentity {
+  const color = randomItem(USER_COLORS)
+
   return {
     name: `${randomItem(ADJECTIVES)} ${randomItem(NOUNS)}`,
-    color: randomItem(USER_COLORS),
+    color,
+    colorLight: `${color}33`,
   }
 }

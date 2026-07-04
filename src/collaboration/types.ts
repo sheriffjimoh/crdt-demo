@@ -6,11 +6,13 @@ export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected'
 export interface ConnectedUser {
   name: string
   color: string
+  colorLight?: string
 }
 
 export interface UserIdentity {
   name: string
   color: string
+  colorLight: string
 }
 
 export interface RoomSession {
